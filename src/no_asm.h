@@ -1019,13 +1019,13 @@ static void ct_inverse_mod_n(limb_t ret[], const limb_t inp[],
     }
 }
 
-#define CT_INVERSE_MOD_IMPL(bits) \
-inline void ct_inverse_mod_##bits(vec##bits ret, const vec##bits inp, \
+#define CT_INVERSE_MOD_IMPL(bits, bits2) \
+inline void ct_inverse_mod_##bits(vec##bits2 ret, const vec##bits inp, \
                                   const vec##bits mod, const vec##bits modx) \
 {   ct_inverse_mod_n(ret, inp, mod, modx, NLIMBS(bits));   }
 
-CT_INVERSE_MOD_IMPL(256)
-CT_INVERSE_MOD_IMPL(384)
+CT_INVERSE_MOD_IMPL(256, 512)
+CT_INVERSE_MOD_IMPL(384, 768)
 
 /*
  * |div_top| points at two most significant limbs of the dividend, |d_hi|
