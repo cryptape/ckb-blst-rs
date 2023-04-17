@@ -7,7 +7,10 @@
 #define __BLS12_381_ASM_VECT_H__
 
 #include <stddef.h>
+#include <stdint.h>
 
+
+#if 0
 #if defined(__x86_64__) || defined(__aarch64__)
 /* These are available even in ILP32 flavours, but even then they are
  * capable of performing 64-bit operations as efficiently as in *P64. */
@@ -33,6 +36,17 @@ typedef unsigned long limb_t;
 #   define LIMB_T_BITS   32
 #   define __BLST_NO_ASM__
 #  endif
+#endif
+
+#endif
+
+#define __BLST_NO_ASM__
+#if 0
+#define LIMB_T_BITS   32
+typedef uint32_t limb_t;
+#else
+#define LIMB_T_BITS   64
+typedef uint64_t limb_t;
 #endif
 
 /*
