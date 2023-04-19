@@ -976,7 +976,7 @@ static limb_t smul_2n(limb_t ret[], const limb_t u[], limb_t f,
     return hi;
 }
 
-static void ct_inverse_mod_n(limb_t ret[], const limb_t inp[],
+void ct_inverse_mod_n(limb_t ret[], const limb_t inp[],
                              const limb_t mod[], const limb_t modx[], size_t n)
 {
     llimb_t limbx;
@@ -1140,7 +1140,9 @@ inline limb_t quot_rem_64(limb_t *div_rem, const limb_t *divisor,
 #define add_mod_384x add_mod_384x
 #define sub_mod_384x sub_mod_384x
 #define lshift_mod_384x lshift_mod_384x
+#ifndef sqr_mont_384x
 #define sqr_mont_384x sqr_mont_384x
+#endif
 
 inline void vec_prefetch(const void *ptr, size_t len)
 {   (void)ptr; (void)len;   }
