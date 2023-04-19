@@ -30,6 +30,8 @@ portable = []
 # Enable ADX even if the host CPU doesn't support it.
 # Binary can be executed on Broadwell+ and Ryzen+ systems.
 force-adx = []
+# Use libblst built specifically for ckb-vm
+ckb-vm = []
 
 [build-dependencies]
 cc = "1.0"

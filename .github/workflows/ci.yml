@@ -48,6 +48,7 @@ jobs:
         cargo test --release
         cargo clean -p blst
         cargo clean -p blst --release
+        cargo build --features ckb-vm
         rm -rf target/.rustc_info.json
         rm -rf target/{debug,release}/incremental
         rm -rf ~/.cargo/registry/src

@@ -31,6 +31,16 @@ fn assembly(file_vec: &mut Vec<PathBuf>, base_dir: &Path) {
 }
 
 fn main() {
+    if cfg!(feature = "ckb-vm") {
+        if !Path::new("../../build/ckb-vm/libblst.a").exists() {
+            std::process::Command::new("../../build-for-ckb-vm.sh")
+                .status()
+                .unwrap();
+        }
+        println!("cargo:rustc-link-search=../../build/ckb-vm");
+        println!("cargo:rustc-link-lib=blst");
+        return;
+    }
     /*
      * Use pre-built libblst.a if there is one. This is primarily
      * for trouble-shooting purposes. Idea is that libblst.a can be

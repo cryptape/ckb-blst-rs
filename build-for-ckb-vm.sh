@@ -9,4 +9,4 @@ CFLAGS="-DUSE_MUL_MONT_384_ASM -DCKB_DECLARATION_ONLY -fno-builtin-printf -fPIC 
 (cd "${TOP}"; set -x; "${CC}" ${CFLAGS} -c -o build/ckb-vm/blst_mul_mont_384.o build/ckb-vm/blst_mul_mont_384.riscv.S) &
 (cd "${TOP}"; set -x; "${CC}" ${CFLAGS} -c -o build/ckb-vm/blst_mul_mont_384x.o build/ckb-vm/blst_mul_mont_384x.riscv.S) &
 wait
-"${AR:-ar}" rcs build/ckb-vm/libblst.a build/ckb-vm/*.o
+"${AR:-ar}" rcs "${TOP}/build/ckb-vm/libblst.a" "${TOP}/build/ckb-vm/"*.o
