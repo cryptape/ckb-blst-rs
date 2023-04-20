@@ -6,10 +6,10 @@
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
 
-use std::any::Any;
-use std::mem::transmute;
+use core::any::Any;
+use core::mem::transmute;
 use std::sync::{atomic::*, mpsc::channel, Arc};
-use std::{ptr, slice};
+use core::{ptr, slice};
 use zeroize::Zeroize;
 
 include!("bindings.rs");
