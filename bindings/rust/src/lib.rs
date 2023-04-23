@@ -8,7 +8,6 @@
 
 use core::any::Any;
 use core::mem::transmute;
-use std::sync::{atomic::*, mpsc::channel, Arc};
 use core::{ptr, slice};
 use zeroize::Zeroize;
 
@@ -648,22 +647,15 @@ macro_rules! sig_variant_impl {
 
                 // TODO - check msg uniqueness?
 
-                let (tx, rx) = channel();
-                let counter = Arc::new(AtomicUsize::new(0));
-                let valid = Arc::new(AtomicBool::new(true));
-
                 // Bypass 'lifetime limitations by brute force. It works,
                 // because we explicitly join the threads...
                 let raw_pks = unsafe { transmute::<*const &PublicKey, usize>(pks.as_ptr()) };
                 let raw_msgs = unsafe { transmute::<*const &[u8], usize>(msgs.as_ptr()) };
                 let dst = unsafe { slice::from_raw_parts(dst.as_ptr(), dst.len()) };
 
+                let mut acc: Option<Pairing> = None;
                 let n_workers = n_elems;
-                for _ in 0..n_workers {
-                    let tx = tx.clone();
-                    let counter = counter.clone();
-                    let valid = valid.clone();
-
+                for work in 0..n_workers {
                     let mut pairing = Pairing::new($hash_or_encode, dst);
                     // reconstruct input slices...
                     let msgs = unsafe {
@@ -676,48 +668,37 @@ macro_rules! sig_variant_impl {
                         )
                     };
 
-                    while valid.load(Ordering::Relaxed) {
-                        let work = counter.fetch_add(1, Ordering::Relaxed);
-                        if work >= n_elems {
-                            break;
-                        }
-                        if pairing.aggregate(
-                            &pks[work].point,
-                            pks_validate,
-                            &unsafe { ptr::null::<$sig_aff>().as_ref() },
-                            false,
-                            &msgs[work],
-                            &[],
-                        ) != BLST_ERROR::BLST_SUCCESS
-                        {
-                            valid.store(false, Ordering::Relaxed);
-                            break;
-                        }
+                    if pairing.aggregate(
+                        &pks[work].point,
+                        pks_validate,
+                        &unsafe { ptr::null::<$sig_aff>().as_ref() },
+                        false,
+                        &msgs[work],
+                        &[],
+                    ) != BLST_ERROR::BLST_SUCCESS
+                    {
+                        return BLST_ERROR::BLST_VERIFY_FAIL;
                     }
-                    if valid.load(Ordering::Relaxed) {
-                        pairing.commit();
+                    pairing.commit();
+                    if acc.is_none() {
+                        acc = Some(pairing)
+                    } else {
+                        acc.as_mut().unwrap().merge(&pairing);
                     }
-                    tx.send(pairing).expect("disaster");
                 }
+                let acc = acc.unwrap();
 
-                if sig_groupcheck && valid.load(Ordering::Relaxed) {
+                if sig_groupcheck {
                     match self.validate(false) {
-                        Err(_err) => valid.store(false, Ordering::Relaxed),
+                        Err(_err) => return BLST_ERROR::BLST_VERIFY_FAIL,
                         _ => (),
                     }
                 }
 
                 let mut gtsig = blst_fp12::default();
-                if valid.load(Ordering::Relaxed) {
-                    Pairing::aggregated(&mut gtsig, &self.point);
-                }
+                Pairing::aggregated(&mut gtsig, &self.point);
 
-                let mut acc = rx.recv().unwrap();
-                for _ in 1..n_workers {
-                    acc.merge(&rx.recv().unwrap());
-                }
-
-                if valid.load(Ordering::Relaxed) && acc.finalverify(Some(&gtsig)) {
+                if acc.finalverify(Some(&gtsig)) {
                     BLST_ERROR::BLST_SUCCESS
                 } else {
                     BLST_ERROR::BLST_VERIFY_FAIL
@@ -773,10 +754,6 @@ macro_rules! sig_variant_impl {
 
                 // TODO - check msg uniqueness?
 
-                let (tx, rx) = channel();
-                let counter = Arc::new(AtomicUsize::new(0));
-                let valid = Arc::new(AtomicBool::new(true));
-
                 // Bypass 'lifetime limitations by brute force. It works,
                 // because we explicitly join the threads...
                 let raw_pks = unsafe { transmute::<*const &PublicKey, usize>(pks.as_ptr()) };
@@ -785,12 +762,8 @@ macro_rules! sig_variant_impl {
                 let raw_msgs = unsafe { transmute::<*const &[u8], usize>(msgs.as_ptr()) };
                 let dst = unsafe { slice::from_raw_parts(dst.as_ptr(), dst.len()) };
 
-                let n_workers = n_elems;
-                for _ in 0..n_workers {
-                    let tx = tx.clone();
-                    let counter = counter.clone();
-                    let valid = valid.clone();
-
+                let mut acc: Option<Pairing> = None;
+                for work in 0..n_elems {
                     let mut pairing = Pairing::new($hash_or_encode, dst);
                     // reconstruct input slices...
                     let rands = unsafe {
@@ -817,39 +790,30 @@ macro_rules! sig_variant_impl {
 
                     // TODO - engage multi-point mul-n-add for larger
                     // amount of inputs...
-                    while valid.load(Ordering::Relaxed) {
-                        let work = counter.fetch_add(1, Ordering::Relaxed);
-                        if work >= n_elems {
-                            break;
-                        }
-
-                        if pairing.mul_n_aggregate(
-                            &pks[work].point,
-                            pks_validate,
-                            &sigs[work].point,
-                            sigs_groupcheck,
-                            &rands[work].b,
-                            rand_bits,
-                            msgs[work],
-                            &[],
-                        ) != BLST_ERROR::BLST_SUCCESS
-                        {
-                            valid.store(false, Ordering::Relaxed);
-                            break;
-                        }
+                    if pairing.mul_n_aggregate(
+                        &pks[work].point,
+                        pks_validate,
+                        &sigs[work].point,
+                        sigs_groupcheck,
+                        &rands[work].b,
+                        rand_bits,
+                        msgs[work],
+                        &[],
+                    ) != BLST_ERROR::BLST_SUCCESS
+                    {
+                        return BLST_ERROR::BLST_VERIFY_FAIL;
                     }
-                    if valid.load(Ordering::Relaxed) {
-                        pairing.commit();
+                    pairing.commit();
+                    if acc.is_none() {
+                        acc = Some(pairing)
+                    } else {
+                        acc.as_mut().unwrap().merge(&pairing);
                     }
-                    tx.send(pairing).expect("disaster");
                 }
 
-                let mut acc = rx.recv().unwrap();
-                for _ in 1..n_workers {
-                    acc.merge(&rx.recv().unwrap());
-                }
+                let acc = acc.unwrap();
 
-                if valid.load(Ordering::Relaxed) && acc.finalverify(None) {
+                if acc.finalverify(None) {
                     BLST_ERROR::BLST_SUCCESS
                 } else {
                     BLST_ERROR::BLST_VERIFY_FAIL
