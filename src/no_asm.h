@@ -8,6 +8,10 @@
 typedef unsigned long long llimb_t;
 #endif
 
+#if LIMB_T_BITS==64
+typedef unsigned __int128 llimb_t;
+#endif
+
 #if defined(__clang__)
 # pragma GCC diagnostic ignored "-Wstatic-in-inline"
 #endif
@@ -83,7 +87,24 @@ inline void sqr_mont_##bits(vec##bits ret, const vec##bits a, \
 MUL_MONT_IMPL(256)
 #undef mul_mont_256
 #undef sqr_mont_256
+
+#if USE_MUL_MONT_384_ASM
+// will be implemented in asm
+void blst_mul_mont_384(vec384 ret, const vec384 a,
+                  const vec384 b, const vec384 p, limb_t n0);
+
+inline void mul_mont_384(vec384 ret, const vec384 a,
+                  const vec384 b, const vec384 p, limb_t n0) {
+  return blst_mul_mont_384(ret, a, b, p, n0);
+}
+
+inline void sqr_mont_384(vec384 ret, const vec384 a,
+                            const vec384 p, limb_t n0)
+{   mul_mont_n(ret, a, a, p, n0, NLIMBS(384));   }
+#else
 MUL_MONT_IMPL(384)
+#endif
+
 
 static void add_mod_n(limb_t ret[], const limb_t a[], const limb_t b[],
                       const limb_t p[], size_t n)
@@ -582,6 +603,17 @@ inline limb_t sgn0_pty_mont_384x(const vec384x a, const vec384 p, limb_t n0)
     return sgn0_pty_mod_384x(tmp, p);
 }
 
+
+#ifdef USE_MUL_MONT_384_ASM
+void blst_mul_mont_384x(vec384x ret, const vec384x a, const vec384x b,
+                          const vec384 p, limb_t n0);
+
+inline void mul_mont_384x(vec384x ret, const vec384x a, const vec384x b,
+                          const vec384 p, limb_t n0) {
+  return blst_mul_mont_384x(ret, a, b, p, n0);
+}
+
+#else
 void mul_mont_384x(vec384x ret, const vec384x a, const vec384x b,
                           const vec384 p, limb_t n0)
 {
@@ -596,6 +628,8 @@ void mul_mont_384x(vec384x ret, const vec384x a, const vec384x b,
     sub_mod_n(ret[1], bb, aa, p, NLIMBS(384));
     sub_mod_n(ret[1], ret[1], cc, p, NLIMBS(384));
 }
+#endif
+
 
 /*
  * mul_mont_n without final conditional subtraction, which implies

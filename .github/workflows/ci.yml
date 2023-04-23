@@ -48,6 +48,9 @@ jobs:
         cargo test --release --no-default-features
         cargo clean -p blst
         cargo clean -p blst --release
+        if [[ ${{ startsWith(runner.os, 'windows') }} != 'true' ]]; then
+            cargo build
+        fi
         rm -rf target/.rustc_info.json
         rm -rf target/{debug,release}/incremental
         rm -rf ~/.cargo/registry/src

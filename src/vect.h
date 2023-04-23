@@ -25,6 +25,12 @@ typedef unsigned int limb_t;
 #  define __BLST_NO_ASM__
 # endif
 
+#elif defined(BUILD_FOR_CKB_VM)
+#include <stdint.h>
+typedef uint64_t limb_t;
+#define LIMB_T_BITS   64
+#define __BLST_NO_ASM__
+
 #else                   /* 32 bits on 32-bit platforms, 64 - on 64-bit */
 typedef unsigned long limb_t;
 #  ifdef _LP64
