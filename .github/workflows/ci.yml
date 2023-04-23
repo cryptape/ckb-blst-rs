@@ -37,6 +37,9 @@ jobs:
         lscpu 2>/dev/null && echo --- || true
         env | sort
 
+    - uses: cachix/install-nix-action@v20
+      if: ${{ ! startsWith(runner.os, 'windows') }}
+
     - name: Rust
       shell: bash
       run: |
@@ -45,12 +48,18 @@ jobs:
         if [ "$GITHUB_EVENT_NAME" != "pull_request" ]; then
             cargo update
         fi
+        cargo build --release --no-default-features
         cargo test --release --no-default-features
         cargo clean -p blst
         cargo clean -p blst --release
+
+        # Build library for ckb-vm
         if [[ ${{ startsWith(runner.os, 'windows') }} != 'true' ]]; then
-            cargo build
+            rustup target add riscv64imac-unknown-none-elf
+            export CC_riscv64imac_unknown_none_elf="$(nix build --print-out-paths --no-link "nixpkgs#pkgsCross.riscv64-embedded.stdenv.cc.out" 2>/dev/null)/bin/riscv64-none-elf-gcc"
+            cargo build --release --target=riscv64imac-unknown-none-elf --features=ckb-vm
         fi
+
         rm -rf target/.rustc_info.json
         rm -rf target/{debug,release}/incremental
         rm -rf ~/.cargo/registry/src

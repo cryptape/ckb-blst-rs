@@ -29,17 +29,6 @@ fn assembly(file_vec: &mut Vec<PathBuf>, base_dir: &Path) {
 }
 
 fn main() {
-    if cfg!(feature = "ckb-vm") {
-        println!("cargo:rerun-if-changed=../../build-for-ckb-vm.sh");
-        if !Path::new("../../build/ckb-vm/libblst.a").exists() {
-            std::process::Command::new("../../build-for-ckb-vm.sh")
-                .status()
-                .unwrap();
-        }
-        println!("cargo:rustc-link-search=../../build/ckb-vm");
-        println!("cargo:rustc-link-lib=blst");
-        return;
-    }
     /*
      * Use pre-built libblst.a if there is one. This is primarily
      * for trouble-shooting purposes. Idea is that libblst.a can be
@@ -79,6 +68,38 @@ fn main() {
     let c_src_dir = blst_base_dir.join("src");
 
     file_vec.push(c_src_dir.join("server.c"));
+    if cfg!(feature = "ckb-vm") {
+        let asm_src_dir = c_src_dir.join("asm");
+        file_vec.push(asm_src_dir.join("blst_mul_mont_384.riscv.S"));
+        file_vec.push(asm_src_dir.join("blst_mul_mont_384x.riscv.S"));
+
+        let c_deps_dir = blst_base_dir.join("deps");
+
+        let mut cc = cc::Build::new();
+        // CFLAGS="-DBUILD_FOR_CKB_VM -DUSE_MUL_MONT_384_ASM -DCKB_DECLARATION_ONLY -fno-builtin-printf -fPIC -fvisibility=hidden -fdata-sections -ffunction-sections -O3 -nostdinc -nostdlib -nostartfiles -Wall -Werror -Wno-nonnull -Wno-nonnull-compare -Wno-unused-function -g -Wl,-static -Wl,--gc-sections -I deps/ckb-c-stdlib -I deps/ckb-c-stdlib/libc"
+        cc.define("BUILD_FOR_CKB_VM", None)
+            .define("USE_MUL_MONT_384_ASM", None)
+            .define("CKB_DECLARATION_ONLY ", None)
+            .include(c_deps_dir.join("ckb-c-stdlib"))
+            .include(c_deps_dir.join("ckb-c-stdlib").join("libc"))
+            .pic(true)
+            .opt_level(3)
+            .debug(true)
+            .static_flag(true)
+            .flag_if_supported("-fno-builtin-printf")
+            .flag_if_supported("-fvisibility=hidden")
+            .flag_if_supported("-ffunction-sections")
+            .flag_if_supported("-fdata-sections")
+            .flag_if_supported("-nostdinc")
+            .flag_if_supported("-nostdlib")
+            .flag_if_supported("-nostartfiles")
+            .flag_if_supported("-Wl,-static")
+            .flag_if_supported("-Wl,--gc-sections");
+
+        cc.files(&file_vec).compile("libblst.a");
+        return;
+    }
+
     #[cfg(all(target_pointer_width = "64"))]
     assembly(&mut file_vec, &blst_base_dir.join("build"));
 
