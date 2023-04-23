@@ -6,6 +6,12 @@
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
 
+#![cfg_attr(all(not(test), not(feature = "std")), no_std)]
+#[cfg(not(feature = "std"))]
+extern crate alloc;
+#[cfg(not(feature = "std"))]
+use alloc::{boxed::Box, vec::Vec, vec};
+
 use core::any::Any;
 use core::mem::transmute;
 use core::{ptr, slice};

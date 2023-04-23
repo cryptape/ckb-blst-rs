@@ -32,6 +32,8 @@ portable = []
 force-adx = []
 # Use libblst built specifically for ckb-vm
 ckb-vm = []
+# Enable std
+std = []
 
 [build-dependencies]
 cc = "1.0"
