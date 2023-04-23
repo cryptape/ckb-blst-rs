@@ -1,10 +1,4 @@
-// Copyright Supranational LLC
-// Licensed under the Apache License, Version 2.0, see LICENSE for details.
-// SPDX-License-Identifier: Apache-2.0
-
 use blst::*;
-
-// Benchmark min_pk
 use blst::min_pk::*;
 
 fn main() {

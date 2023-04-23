@@ -7,9 +7,8 @@ use std::path::{Path, PathBuf};
 
 #[cfg(all(target_env = "msvc", target_arch = "x86_64"))]
 fn assembly(file_vec: &mut Vec<PathBuf>, base_dir: &Path) {
-    let files =
-        glob::glob(&format!("{}/win64/*-x86_64.asm", base_dir.display()))
-            .expect("unable to collect assembly files");
+    let files = glob::glob(&format!("{}/win64/*-x86_64.asm", base_dir.display()))
+        .expect("unable to collect assembly files");
     for file in files {
         file_vec.push(file.unwrap());
     }
@@ -17,9 +16,8 @@ fn assembly(file_vec: &mut Vec<PathBuf>, base_dir: &Path) {
 
 #[cfg(all(target_env = "msvc", target_arch = "aarch64"))]
 fn assembly(file_vec: &mut Vec<PathBuf>, base_dir: &Path) {
-    let files =
-        glob::glob(&format!("{}/win64/*-armv8.asm", base_dir.display()))
-            .expect("unable to collect assembly files");
+    let files = glob::glob(&format!("{}/win64/*-armv8.asm", base_dir.display()))
+        .expect("unable to collect assembly files");
     for file in files {
         file_vec.push(file.unwrap());
     }
@@ -32,6 +30,7 @@ fn assembly(file_vec: &mut Vec<PathBuf>, base_dir: &Path) {
 
 fn main() {
     if cfg!(feature = "ckb-vm") {
+        println!("cargo:rerun-if-changed=../../build-for-ckb-vm.sh");
         if !Path::new("../../build/ckb-vm/libblst.a").exists() {
             std::process::Command::new("../../build-for-ckb-vm.sh")
                 .status()
@@ -70,9 +69,7 @@ fn main() {
                     .expect("can't access current directory")
                     .parent()
                     .and_then(|dir| dir.parent())
-                    .expect(
-                        "can't access parent of parent of current directory",
-                    )
+                    .expect("can't access parent of parent of current directory")
                     .into()
             }
         }
@@ -105,17 +102,15 @@ fn main() {
                 println!("`force-adx` is ignored for non-x86_64 targets");
             }
         }
-        (false, false) => {
+        (false, false) =>
+        {
             #[cfg(target_arch = "x86_64")]
-            if target_arch.eq("x86_64") && std::is_x86_feature_detected!("adx")
-            {
+            if target_arch.eq("x86_64") && std::is_x86_feature_detected!("adx") {
                 println!("Enabling ADX because it was detected on the host");
                 cc.define("__ADX__", None);
             }
         }
-        (true, true) => panic!(
-            "Cannot compile with both `portable` and `force-adx` features"
-        ),
+        (true, true) => panic!("Cannot compile with both `portable` and `force-adx` features"),
     }
     cc.flag_if_supported("-mno-avx") // avoid costly transitions
         .flag_if_supported("-fno-builtin-memcpy")
