@@ -22,17 +22,17 @@ pub struct blst_scalar {
 #[test]
 fn bindgen_test_layout_blst_scalar() {
     assert_eq!(
-        ::std::mem::size_of::<blst_scalar>(),
+        core::mem::size_of::<blst_scalar>(),
         32usize,
         concat!("Size of: ", stringify!(blst_scalar))
     );
     assert_eq!(
-        ::std::mem::align_of::<blst_scalar>(),
+        core::mem::align_of::<blst_scalar>(),
         1usize,
         concat!("Alignment of ", stringify!(blst_scalar))
     );
     assert_eq!(
-        unsafe { &(*(::std::ptr::null::<blst_scalar>())).b as *const _ as usize },
+        unsafe { &(*(core::ptr::null::<blst_scalar>())).b as *const _ as usize },
         0usize,
         concat!(
             "Offset of field: ",
@@ -50,17 +50,17 @@ pub struct blst_fr {
 #[test]
 fn bindgen_test_layout_blst_fr() {
     assert_eq!(
-        ::std::mem::size_of::<blst_fr>(),
+        core::mem::size_of::<blst_fr>(),
         32usize,
         concat!("Size of: ", stringify!(blst_fr))
     );
     assert_eq!(
-        ::std::mem::align_of::<blst_fr>(),
+        core::mem::align_of::<blst_fr>(),
         8usize,
         concat!("Alignment of ", stringify!(blst_fr))
     );
     assert_eq!(
-        unsafe { &(*(::std::ptr::null::<blst_fr>())).l as *const _ as usize },
+        unsafe { &(*(core::ptr::null::<blst_fr>())).l as *const _ as usize },
         0usize,
         concat!(
             "Offset of field: ",
@@ -78,17 +78,17 @@ pub struct blst_fp {
 #[test]
 fn bindgen_test_layout_blst_fp() {
     assert_eq!(
-        ::std::mem::size_of::<blst_fp>(),
+        core::mem::size_of::<blst_fp>(),
         48usize,
         concat!("Size of: ", stringify!(blst_fp))
     );
     assert_eq!(
-        ::std::mem::align_of::<blst_fp>(),
+        core::mem::align_of::<blst_fp>(),
         8usize,
         concat!("Alignment of ", stringify!(blst_fp))
     );
     assert_eq!(
-        unsafe { &(*(::std::ptr::null::<blst_fp>())).l as *const _ as usize },
+        unsafe { &(*(core::ptr::null::<blst_fp>())).l as *const _ as usize },
         0usize,
         concat!(
             "Offset of field: ",
@@ -106,17 +106,17 @@ pub struct blst_fp2 {
 #[test]
 fn bindgen_test_layout_blst_fp2() {
     assert_eq!(
-        ::std::mem::size_of::<blst_fp2>(),
+        core::mem::size_of::<blst_fp2>(),
         96usize,
         concat!("Size of: ", stringify!(blst_fp2))
     );
     assert_eq!(
-        ::std::mem::align_of::<blst_fp2>(),
+        core::mem::align_of::<blst_fp2>(),
         8usize,
         concat!("Alignment of ", stringify!(blst_fp2))
     );
     assert_eq!(
-        unsafe { &(*(::std::ptr::null::<blst_fp2>())).fp as *const _ as usize },
+        unsafe { &(*(core::ptr::null::<blst_fp2>())).fp as *const _ as usize },
         0usize,
         concat!(
             "Offset of field: ",
@@ -134,17 +134,17 @@ pub struct blst_fp6 {
 #[test]
 fn bindgen_test_layout_blst_fp6() {
     assert_eq!(
-        ::std::mem::size_of::<blst_fp6>(),
+        core::mem::size_of::<blst_fp6>(),
         288usize,
         concat!("Size of: ", stringify!(blst_fp6))
     );
     assert_eq!(
-        ::std::mem::align_of::<blst_fp6>(),
+        core::mem::align_of::<blst_fp6>(),
         8usize,
         concat!("Alignment of ", stringify!(blst_fp6))
     );
     assert_eq!(
-        unsafe { &(*(::std::ptr::null::<blst_fp6>())).fp2 as *const _ as usize },
+        unsafe { &(*(core::ptr::null::<blst_fp6>())).fp2 as *const _ as usize },
         0usize,
         concat!(
             "Offset of field: ",
@@ -162,17 +162,17 @@ pub struct blst_fp12 {
 #[test]
 fn bindgen_test_layout_blst_fp12() {
     assert_eq!(
-        ::std::mem::size_of::<blst_fp12>(),
+        core::mem::size_of::<blst_fp12>(),
         576usize,
         concat!("Size of: ", stringify!(blst_fp12))
     );
     assert_eq!(
-        ::std::mem::align_of::<blst_fp12>(),
+        core::mem::align_of::<blst_fp12>(),
         8usize,
         concat!("Alignment of ", stringify!(blst_fp12))
     );
     assert_eq!(
-        unsafe { &(*(::std::ptr::null::<blst_fp12>())).fp6 as *const _ as usize },
+        unsafe { &(*(core::ptr::null::<blst_fp12>())).fp6 as *const _ as usize },
         0usize,
         concat!(
             "Offset of field: ",
@@ -401,17 +401,17 @@ pub struct blst_p1 {
 #[test]
 fn bindgen_test_layout_blst_p1() {
     assert_eq!(
-        ::std::mem::size_of::<blst_p1>(),
+        core::mem::size_of::<blst_p1>(),
         144usize,
         concat!("Size of: ", stringify!(blst_p1))
     );
     assert_eq!(
-        ::std::mem::align_of::<blst_p1>(),
+        core::mem::align_of::<blst_p1>(),
         8usize,
         concat!("Alignment of ", stringify!(blst_p1))
     );
     assert_eq!(
-        unsafe { &(*(::std::ptr::null::<blst_p1>())).x as *const _ as usize },
+        unsafe { &(*(core::ptr::null::<blst_p1>())).x as *const _ as usize },
         0usize,
         concat!(
             "Offset of field: ",
@@ -421,7 +421,7 @@ fn bindgen_test_layout_blst_p1() {
         )
     );
     assert_eq!(
-        unsafe { &(*(::std::ptr::null::<blst_p1>())).y as *const _ as usize },
+        unsafe { &(*(core::ptr::null::<blst_p1>())).y as *const _ as usize },
         48usize,
         concat!(
             "Offset of field: ",
@@ -431,7 +431,7 @@ fn bindgen_test_layout_blst_p1() {
         )
     );
     assert_eq!(
-        unsafe { &(*(::std::ptr::null::<blst_p1>())).z as *const _ as usize },
+        unsafe { &(*(core::ptr::null::<blst_p1>())).z as *const _ as usize },
         96usize,
         concat!(
             "Offset of field: ",
@@ -450,17 +450,17 @@ pub struct blst_p1_affine {
 #[test]
 fn bindgen_test_layout_blst_p1_affine() {
     assert_eq!(
-        ::std::mem::size_of::<blst_p1_affine>(),
+        core::mem::size_of::<blst_p1_affine>(),
         96usize,
         concat!("Size of: ", stringify!(blst_p1_affine))
     );
     assert_eq!(
-        ::std::mem::align_of::<blst_p1_affine>(),
+        core::mem::align_of::<blst_p1_affine>(),
         8usize,
         concat!("Alignment of ", stringify!(blst_p1_affine))
     );
     assert_eq!(
-        unsafe { &(*(::std::ptr::null::<blst_p1_affine>())).x as *const _ as usize },
+        unsafe { &(*(core::ptr::null::<blst_p1_affine>())).x as *const _ as usize },
         0usize,
         concat!(
             "Offset of field: ",
@@ -470,7 +470,7 @@ fn bindgen_test_layout_blst_p1_affine() {
         )
     );
     assert_eq!(
-        unsafe { &(*(::std::ptr::null::<blst_p1_affine>())).y as *const _ as usize },
+        unsafe { &(*(core::ptr::null::<blst_p1_affine>())).y as *const _ as usize },
         48usize,
         concat!(
             "Offset of field: ",
@@ -551,17 +551,17 @@ pub struct blst_p2 {
 #[test]
 fn bindgen_test_layout_blst_p2() {
     assert_eq!(
-        ::std::mem::size_of::<blst_p2>(),
+        core::mem::size_of::<blst_p2>(),
         288usize,
         concat!("Size of: ", stringify!(blst_p2))
     );
     assert_eq!(
-        ::std::mem::align_of::<blst_p2>(),
+        core::mem::align_of::<blst_p2>(),
         8usize,
         concat!("Alignment of ", stringify!(blst_p2))
     );
     assert_eq!(
-        unsafe { &(*(::std::ptr::null::<blst_p2>())).x as *const _ as usize },
+        unsafe { &(*(core::ptr::null::<blst_p2>())).x as *const _ as usize },
         0usize,
         concat!(
             "Offset of field: ",
@@ -571,7 +571,7 @@ fn bindgen_test_layout_blst_p2() {
         )
     );
     assert_eq!(
-        unsafe { &(*(::std::ptr::null::<blst_p2>())).y as *const _ as usize },
+        unsafe { &(*(core::ptr::null::<blst_p2>())).y as *const _ as usize },
         96usize,
         concat!(
             "Offset of field: ",
@@ -581,7 +581,7 @@ fn bindgen_test_layout_blst_p2() {
         )
     );
     assert_eq!(
-        unsafe { &(*(::std::ptr::null::<blst_p2>())).z as *const _ as usize },
+        unsafe { &(*(core::ptr::null::<blst_p2>())).z as *const _ as usize },
         192usize,
         concat!(
             "Offset of field: ",
@@ -600,17 +600,17 @@ pub struct blst_p2_affine {
 #[test]
 fn bindgen_test_layout_blst_p2_affine() {
     assert_eq!(
-        ::std::mem::size_of::<blst_p2_affine>(),
+        core::mem::size_of::<blst_p2_affine>(),
         192usize,
         concat!("Size of: ", stringify!(blst_p2_affine))
     );
     assert_eq!(
-        ::std::mem::align_of::<blst_p2_affine>(),
+        core::mem::align_of::<blst_p2_affine>(),
         8usize,
         concat!("Alignment of ", stringify!(blst_p2_affine))
     );
     assert_eq!(
-        unsafe { &(*(::std::ptr::null::<blst_p2_affine>())).x as *const _ as usize },
+        unsafe { &(*(core::ptr::null::<blst_p2_affine>())).x as *const _ as usize },
         0usize,
         concat!(
             "Offset of field: ",
@@ -620,7 +620,7 @@ fn bindgen_test_layout_blst_p2_affine() {
         )
     );
     assert_eq!(
-        unsafe { &(*(::std::ptr::null::<blst_p2_affine>())).y as *const _ as usize },
+        unsafe { &(*(core::ptr::null::<blst_p2_affine>())).y as *const _ as usize },
         96usize,
         concat!(
             "Offset of field: ",
@@ -723,7 +723,7 @@ extern "C" {
         npoints: usize,
         scalars: *mut *const byte,
         nbits: usize,
-        scratch: *mut ::std::os::raw::c_void,
+        scratch: *mut core::ffi::c_void,
     );
 }
 extern "C" {
@@ -736,7 +736,7 @@ extern "C" {
         npoints: usize,
         scalars: *mut *const byte,
         nbits: usize,
-        scratch: *mut ::std::os::raw::c_void,
+        scratch: *mut core::ffi::c_void,
     );
 }
 extern "C" {
@@ -771,7 +771,7 @@ extern "C" {
         npoints: usize,
         scalars: *mut *const byte,
         nbits: usize,
-        scratch: *mut ::std::os::raw::c_void,
+        scratch: *mut core::ffi::c_void,
     );
 }
 extern "C" {
@@ -784,7 +784,7 @@ extern "C" {
         npoints: usize,
         scalars: *mut *const byte,
         nbits: usize,
-        scratch: *mut ::std::os::raw::c_void,
+        scratch: *mut core::ffi::c_void,
     );
 }
 extern "C" {
@@ -926,12 +926,12 @@ pub struct blst_pairing {
 #[test]
 fn bindgen_test_layout_blst_pairing() {
     assert_eq!(
-        ::std::mem::size_of::<blst_pairing>(),
+        core::mem::size_of::<blst_pairing>(),
         0usize,
         concat!("Size of: ", stringify!(blst_pairing))
     );
     assert_eq!(
-        ::std::mem::align_of::<blst_pairing>(),
+        core::mem::align_of::<blst_pairing>(),
         1usize,
         concat!("Alignment of ", stringify!(blst_pairing))
     );
@@ -1178,12 +1178,12 @@ pub struct blst_uniq {
 #[test]
 fn bindgen_test_layout_blst_uniq() {
     assert_eq!(
-        ::std::mem::size_of::<blst_uniq>(),
+        core::mem::size_of::<blst_uniq>(),
         0usize,
         concat!("Size of: ", stringify!(blst_uniq))
     );
     assert_eq!(
-        ::std::mem::align_of::<blst_uniq>(),
+        core::mem::align_of::<blst_uniq>(),
         1usize,
         concat!("Alignment of ", stringify!(blst_uniq))
     );

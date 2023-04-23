@@ -242,14 +242,6 @@ pub fn uniq(msgs: &[&[u8]]) -> bool {
     true
 }
 
-pub fn print_bytes(bytes: &[u8], name: &str) {
-    print!("{} ", name);
-    for b in bytes.iter() {
-        print!("{:02x}", b);
-    }
-    println!();
-}
-
 macro_rules! sig_variant_impl {
     (
         $name:expr,
