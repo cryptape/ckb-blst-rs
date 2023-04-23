@@ -1,0 +1,48 @@
+name: build
+
+on:
+  push:
+    branches:
+    - '**'
+  workflow_dispatch:
+    branches:
+    - '**'
+  pull_request:
+    branches:
+    - master
+
+jobs:
+  rust-examples-ckb:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ ubuntu-latest ]
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - uses: actions/cache@v2
+      with:
+        path: |
+          ~/.cargo/registry
+          **/Cargo.lock
+          **/bindings/rust-examples/ckb/target
+        key: ${{ runner.os }}-cargo-rust-examples-ckb-14
+        restore-keys: ${{ runner.os }}-cargo-rust-examples-ckb-13
+
+    - uses: cachix/install-nix-action@v20
+
+    - name: Rust
+      shell: bash
+      run: |
+        rustc --version --verbose
+        cd bindings/rust-examples/ckb
+        rustup target add riscv64imac-unknown-none-elf
+        export CC_riscv64imac_unknown_none_elf="$(nix build --print-out-paths --no-link "nixpkgs#pkgsCross.riscv64-embedded.stdenv.cc.out" 2>/dev/null)/bin/riscv64-none-elf-gcc"
+        cargo build --release --target=riscv64imac-unknown-none-elf
+        rm -rf target/.rustc_info.json
+        rm -rf target/{debug,release}/incremental
+        rm -rf ~/.cargo/registry/src
+        rm -rf ~/.cargo/registry/index/*/.cache
+
