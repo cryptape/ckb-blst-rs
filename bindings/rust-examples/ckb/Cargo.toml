@@ -8,3 +8,5 @@ edition = "2021"
 [dependencies]
 blst = { path = "../../rust" }
 ckb-std = "0.12.1"
+rand = { version = "0.7", default-features = false }
+rand_chacha = { version = "0.2", default-features = false }
