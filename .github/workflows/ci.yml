@@ -20,7 +20,9 @@ jobs:
         os: [ ubuntu-latest, windows-latest, macos-latest ]
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
+      with:
+        submodules: recursive
 
     - uses: actions/cache@v2
       with:
@@ -37,12 +39,15 @@ jobs:
         lscpu 2>/dev/null && echo --- || true
         env | sort
 
-    - uses: cachix/install-nix-action@v20
-      if: ${{ ! startsWith(runner.os, 'windows') }}
+    # Nix is used to cross build blst.
+    - name: Setup nix
+      uses: cachix/install-nix-action@v20
+      if: ${{ startsWith(runner.os, 'linux') }}
 
     - name: Rust
       shell: bash
       run: |
+        set -xeuo pipefail
         rustc --version --verbose
         cd bindings/rust
         if [ "$GITHUB_EVENT_NAME" != "pull_request" ]; then
@@ -53,11 +58,19 @@ jobs:
         cargo clean -p blst
         cargo clean -p blst --release
 
-        # Build library for ckb-vm
-        if [[ ${{ startsWith(runner.os, 'windows') }} != 'true' ]]; then
+        if [[ ${{ startsWith(runner.os, 'linux') }} == 'true' ]]; then
+            # Ensure this crate works on riscv64imac-unknown-none-elf
             rustup target add riscv64imac-unknown-none-elf
             export CC_riscv64imac_unknown_none_elf="$(nix build --print-out-paths --no-link "nixpkgs#pkgsCross.riscv64-embedded.stdenv.cc.out" 2>/dev/null)/bin/riscv64-none-elf-gcc"
             cargo build --release --target=riscv64imac-unknown-none-elf --features=ckb-vm
+
+            # Test the functionality of this crate on riscv64gc-unknown-linux-gnu
+            # We use this target because 1) it is riscv, 2) we need std for some tests.
+            rustup target add riscv64gc-unknown-linux-gnu
+            export CC_riscv64gc_unknown_linux_gnu="$(nix build --print-out-paths --no-link "nixpkgs#pkgsCross.riscv64.stdenv.cc.out" 2>/dev/null)/bin/riscv64-unknown-linux-gnu-gcc"
+            export CARGO_TARGET_RISCV64GC_UNKNOWN_LINUX_GNU_LINKER="$(nix build --print-out-paths --no-link "nixpkgs#pkgsCross.riscv64.stdenv.cc.out" 2>/dev/null)/bin/riscv64-unknown-linux-gnu-gcc"
+            export CARGO_TARGET_RISCV64GC_UNKNOWN_LINUX_GNU_RUNNER="$(nix build --print-out-paths --no-link "nixpkgs#qemu" 2>/dev/null)/bin/qemu-riscv64"
+            cargo test --release --target=riscv64gc-unknown-linux-gnu --features=ckb-vm
         fi
 
         rm -rf target/.rustc_info.json
