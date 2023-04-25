@@ -20,7 +20,9 @@ jobs:
         os: [ ubuntu-latest ]
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
+      with:
+        submodules: recursive
 
     - uses: actions/cache@v2
       with:
@@ -33,14 +35,23 @@ jobs:
 
     - uses: cachix/install-nix-action@v20
 
+    - name: Install ckb-debugger
+      run: |
+        wget 'https://github.com/nervosnetwork/ckb-standalone-debugger/releases/download/v0.107.0/ckb-debugger-linux-x64.tar.gz'
+        tar zxvf ckb-debugger-linux-x64.tar.gz
+        chmod +x ckb-debugger
+        cp ckb-debugger ~/.cargo/bin
+        ckb-debugger --version
+
     - name: Rust
       shell: bash
+      working-directory: ./bindings/rust-examples/ckb
       run: |
         rustc --version --verbose
-        cd bindings/rust-examples/ckb
         rustup target add riscv64imac-unknown-none-elf
         export CC_riscv64imac_unknown_none_elf="$(nix build --print-out-paths --no-link "nixpkgs#pkgsCross.riscv64-embedded.stdenv.cc.out" 2>/dev/null)/bin/riscv64-none-elf-gcc"
-        cargo build --release --target=riscv64imac-unknown-none-elf
+        export CARGO_TARGET_RISCV64IMAC_UNKNOWN_NONE_ELF_RUNNER="env RUST_BACKTRACE=1 RUST_LOG=debug ckb-debugger --max-cycles 9999999999999 --bin"
+        cargo run --target=riscv64imac-unknown-none-elf
         rm -rf target/.rustc_info.json
         rm -rf target/{debug,release}/incremental
         rm -rf ~/.cargo/registry/src
