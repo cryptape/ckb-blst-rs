@@ -71,6 +71,7 @@ jobs:
             export CARGO_TARGET_RISCV64GC_UNKNOWN_LINUX_GNU_LINKER="$(nix build --print-out-paths --no-link "nixpkgs#pkgsCross.riscv64.stdenv.cc.out" 2>/dev/null)/bin/riscv64-unknown-linux-gnu-gcc"
             export CARGO_TARGET_RISCV64GC_UNKNOWN_LINUX_GNU_RUNNER="$(nix build --print-out-paths --no-link "nixpkgs#qemu" 2>/dev/null)/bin/qemu-riscv64"
             cargo test --release --target=riscv64gc-unknown-linux-gnu --features=ckb-vm
+            cargo bench --target=riscv64gc-unknown-linux-gnu --features=ckb-vm
         fi
 
         rm -rf target/.rustc_info.json
