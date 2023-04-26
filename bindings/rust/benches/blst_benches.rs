@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use blst::*;
+use ckb_blst::*;
 
 // Benchmark min_pk
-use blst::min_pk::*;
+use ckb_blst::min_pk::*;
 
 use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
 use rand::{RngCore, SeedableRng};

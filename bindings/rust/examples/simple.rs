@@ -1,5 +1,5 @@
-use blst::*;
-use blst::min_pk::*;
+use ckb_blst::*;
+use ckb_blst::min_pk::*;
 
 fn main() {
     let ikm: [u8; 32] = [

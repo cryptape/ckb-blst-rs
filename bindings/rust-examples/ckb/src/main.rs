@@ -11,8 +11,8 @@ default_alloc!();
 
 use alloc::{vec, vec::Vec};
 
-use blst::min_pk::*;
-use blst::*;
+use ckb_blst::min_pk::*;
+use ckb_blst::*;
 
 use rand::{RngCore, SeedableRng};
 use rand_chacha::ChaCha20Rng;

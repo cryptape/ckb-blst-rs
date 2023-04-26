@@ -19,12 +19,12 @@ There are two primary modes of operation that can be chosen based on declaration
 
 For minimal-pubkey-size operations:
 ```
-use blst::min_pk::*
+use ckb_blst::min_pk::*
 ```
 
 For minimal-signature-size operations:
 ```
-use blst::min_sig::*
+use ckb_blst::min_sig::*
 ```
 
 There are five structs with inherent implementations that provide the BLS12-381 signature functionality.

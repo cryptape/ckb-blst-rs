@@ -178,12 +178,12 @@ For more details see the Go binding [readme](bindings/go/README.md).
 
 To use min-pk version:
 ```
-use blst::min_pk::*;
+use ckb_blst::min_pk::*;
 ```
 
 To use min-sig version:
 ```
-use blst::min_sig::*;
+use ckb_blst::min_sig::*;
 ```
 
 For more details see the Rust binding [readme](bindings/rust/README.md).

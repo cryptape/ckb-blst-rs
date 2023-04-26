@@ -55,8 +55,7 @@ jobs:
         fi
         cargo build --release --no-default-features
         cargo test --release --no-default-features
-        cargo clean -p blst
-        cargo clean -p blst --release
+        cargo clean
 
         if [[ ${{ startsWith(runner.os, 'linux') }} == 'true' ]]; then
             # Ensure this crate works on riscv64imac-unknown-none-elf
