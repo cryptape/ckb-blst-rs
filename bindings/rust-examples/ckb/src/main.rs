@@ -12,93 +12,125 @@ default_alloc!();
 use alloc::{vec, vec::Vec};
 
 use ckb_blst::min_pk::*;
-use ckb_blst::*;
 
 use rand::{RngCore, SeedableRng};
 use rand_chacha::ChaCha20Rng;
 
-pub fn gen_random_key(rng: &mut rand_chacha::ChaCha20Rng) -> SecretKey {
+struct BenchData {
+    sk: SecretKey,
+    pk: PublicKey,
+    msg: Vec<u8>,
+    dst: Vec<u8>,
+    sig: Signature,
+}
+
+fn gen_bench_data(rng: &mut rand_chacha::ChaCha20Rng) -> BenchData {
     let mut ikm = [0u8; 32];
     rng.fill_bytes(&mut ikm);
-    SecretKey::key_gen(&ikm, &[]).unwrap()
+
+    let sk = SecretKey::key_gen(&ikm, &[]).unwrap();
+    let pk = sk.sk_to_pk();
+    let dst = "BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_NUL_"
+        .as_bytes()
+        .to_vec();
+    let msg_len = (rng.next_u64() & 0x3F) + 1;
+    let mut msg = vec![0u8; msg_len as usize];
+    rng.fill_bytes(&mut msg);
+
+    let sig = sk.sign(&msg, &dst, &[]);
+
+    let bd = BenchData {
+        sk,
+        pk,
+        dst,
+        msg,
+        sig,
+    };
+    bd
 }
 
 fn main() -> i8 {
-    multsig_test(1);
-    multsig_test(10);
-    multsig_test(100);
+    let seed = [42u8; 32];
+    let mut rng = ChaCha20Rng::from_seed(seed);
+
+    let sizes = vec![8, 16, 32, 64, 128];
+
+    let bds: Vec<_> = (0..*sizes.iter().max().unwrap())
+        .map(|_| gen_bench_data(&mut rng))
+        .collect();
+
+    let msg = &bds[0].msg;
+    let dst = &bds[0].dst;
+
+    for size in sizes.iter() {
+        let pks_refs = bds
+            .iter()
+            .take(*size)
+            .map(|s| &s.pk)
+            .collect::<Vec<&PublicKey>>();
+        let sigs_refs = bds
+            .iter()
+            .take(*size)
+            .map(|s| &s.sig)
+            .collect::<Vec<&Signature>>();
+
+        fast_aggregate_verify(&pks_refs, &sigs_refs, msg, dst);
+
+        let agg_pk = match AggregatePublicKey::aggregate(&pks_refs, false) {
+            Ok(agg_pks) => agg_pks.to_public_key(),
+            Err(err) => panic!("aggregate failure: {:?}", err),
+        };
+        fast_aggregate_verify_pre_aggregated(&agg_pk, &sigs_refs, msg, dst);
+    }
     return 0;
 }
 
-fn multsig_test(num_msgs: usize) {
-    let dst = b"BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_NUL_";
-
-    let seed = [0u8; 32];
-    let mut rng = ChaCha20Rng::from_seed(seed);
-
-    let sks: Vec<_> = (0..num_msgs).map(|_| gen_random_key(&mut rng)).collect();
-    let pks = sks.iter().map(|sk| sk.sk_to_pk()).collect::<Vec<_>>();
-    let pks_refs: Vec<&PublicKey> = pks.iter().map(|pk| pk).collect();
-
-    let mut msgs: Vec<Vec<u8>> = vec![vec![]; num_msgs];
-    for i in 0..num_msgs {
-        let msg_len = (rng.next_u64() & 0x3F) + 1;
-        msgs[i] = vec![0u8; msg_len as usize];
-        rng.fill_bytes(&mut msgs[i]);
-    }
-
-    let msgs_refs: Vec<&[u8]> = msgs.iter().map(|m| m.as_slice()).collect();
-
-    let sign_start = ckb_std::syscalls::current_cycles();
-    let sigs = sks
-        .iter()
-        .zip(msgs.iter())
-        .map(|(sk, m)| (sk.sign(m, dst, &[])))
-        .collect::<Vec<Signature>>();
-    let sign_end = ckb_std::syscalls::current_cycles();
-    debug!(
-        "Cycles consumed to sign {} messages: {}",
-        num_msgs,
-        sign_end - sign_start
-    );
-
-    let verify_start = ckb_std::syscalls::current_cycles();
-    let errs = sigs
-        .iter()
-        .zip(msgs.iter())
-        .zip(pks.iter())
-        .map(|((s, m), pk)| (s.verify(true, m, dst, &[], pk, true)))
-        .collect::<Vec<BLST_ERROR>>();
-    assert_eq!(errs, vec![BLST_ERROR::BLST_SUCCESS; num_msgs]);
-    let verify_end = ckb_std::syscalls::current_cycles();
-    debug!(
-        "Cycles consumed to verify {} signatures: {}",
-        num_msgs,
-        verify_end - verify_start
-    );
-
-    let sig_refs = sigs.iter().map(|s| s).collect::<Vec<&Signature>>();
+fn fast_aggregate_verify(
+    pks_refs: &[&PublicKey],
+    sigs_refs: &[&Signature],
+    msg: &[u8],
+    dst: &[u8],
+) {
+    let num_sigs = sigs_refs.len();
 
     let agg_start = ckb_std::syscalls::current_cycles();
-    let agg = match AggregateSignature::aggregate(&sig_refs, true) {
-        Ok(agg) => agg,
+
+    let agg_sig = match AggregateSignature::aggregate(&sigs_refs, false) {
+        Ok(agg) => agg.to_signature(),
         Err(err) => panic!("aggregate failure: {:?}", err),
     };
 
-    let agg_sig = agg.to_signature();
+    agg_sig.fast_aggregate_verify(true, msg, dst, pks_refs);
+
     let agg_end = ckb_std::syscalls::current_cycles();
     debug!(
-        "Cycles consumed to aggregate {} signatures: {}",
-        num_msgs,
+        "Cycles consumed to fast_aggregate_verify {} aggregated signatures: {}",
+        num_sigs,
         agg_end - agg_start
     );
+}
 
-    let result = agg_sig.aggregate_verify(false, &msgs_refs, dst, &pks_refs, false);
-    let agg_verify_end = ckb_std::syscalls::current_cycles();
+fn fast_aggregate_verify_pre_aggregated(
+    pk: &PublicKey,
+    sigs_refs: &[&Signature],
+    msg: &[u8],
+    dst: &[u8],
+) {
+    let num_sigs = sigs_refs.len();
+
+    let agg_start = ckb_std::syscalls::current_cycles();
+
+    let agg_sig = match AggregateSignature::aggregate(&sigs_refs, false) {
+        Ok(agg) => agg.to_signature(),
+        Err(err) => panic!("aggregate failure: {:?}", err),
+    };
+
+    agg_sig.fast_aggregate_verify_pre_aggregated(true, msg, dst, pk);
+
+    let agg_end = ckb_std::syscalls::current_cycles();
     debug!(
-        "Cycles consumed to verify signature aggregated from {} signatures: {}",
-        num_msgs,
-        agg_verify_end - agg_end
+        "Cycles consumed to fast_aggregate_verify_pre_aggregated {} aggregated signatures: {}",
+        num_sigs,
+        agg_end - agg_start
     );
-    assert_eq!(result, BLST_ERROR::BLST_SUCCESS);
 }
