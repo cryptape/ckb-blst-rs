@@ -6,23 +6,28 @@ The original documentation is available at [README-original.md](./README-origina
 
 You will need a riscv64 gcc to compile this crate. Set the environment variable `CC_riscv64imac_unknown_none_elf` to your riscv64 gcc compiler,
 e.g. running `export CC_riscv64imac_unknown_none_elf=riscv64-unknown-elf-gcc`.
-Following the platform-dependent instructions below to install a riscv64 gcc and then build this crate with
+One way to install the required toolchain is to use [nix](https://nixos.org/), a universal package manager, on normal Linux distros, WSL, and macOS.
+Follow the [official nix installation instructions](https://nixos.org/download.html) to install nix.
+You may also follow the platform-dependent instructions below to install a riscv64 gcc and then build this crate with
 
 ```
+git submodule update --init
 cd bindings/rust
 rustup target add riscv64imac-unknown-none-elf
 cargo build --target=riscv64imac-unknown-none-elf
 ```
 
+
+### Nix
+```
+export CC_riscv64imac_unknown_none_elf="$(nix --extra-experimental-features nix-command build --print-out-paths --no-link "nixpkgs#pkgsCross.riscv64-embedded.stdenv.cc.out" 2>/dev/null)/bin/riscv64-none-elf-gcc"
+```
+
+
 ### Arch Linux
 ```
 pacman -S riscv64-elf-gcc
 export CC_riscv64imac_unknown_none_elf=riscv64-elf-gcc
-```
-
-### Nix
-```
-export CC_riscv64imac_unknown_none_elf="$(nix build --print-out-paths --no-link "nixpkgs#pkgsCross.riscv64-embedded.stdenv.cc.out" 2>/dev/null)/bin/riscv64-none-elf-gcc"
 ```
 
 ### Ubuntu
