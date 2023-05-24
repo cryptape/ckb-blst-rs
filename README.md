@@ -2,8 +2,14 @@
 [ckb-blst-rs](./bindings/rust) is a fork of [blst](https://github.com/supranational/blst) with performance optimizations for CKB.
 The original documentation is available at [README-original.md](./README-original.md).
 
-## Building
+### Building with capsule
+The recommended way to build this crate is to use [nervosnetwork/capsule](https://github.com/nervosnetwork/capsule) in downstream dependencies. The docker image used by capsule contains the required toolchains.
 
+```
+capsule build
+```
+
+## Building on other systems
 You will need a riscv64 gcc to compile this crate. Set the environment variable `CC_riscv64imac_unknown_none_elf` to your riscv64 gcc compiler,
 e.g. running `export CC_riscv64imac_unknown_none_elf=riscv64-unknown-elf-gcc`.
 One way to install the required toolchain is to use [nix](https://nixos.org/), a universal package manager, on normal Linux distros, WSL, and macOS.
@@ -16,7 +22,6 @@ cd bindings/rust
 rustup target add riscv64imac-unknown-none-elf
 cargo build --target=riscv64imac-unknown-none-elf
 ```
-
 
 ### Nix
 ```

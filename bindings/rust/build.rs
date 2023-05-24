@@ -7,8 +7,9 @@ use std::path::{Path, PathBuf};
 
 #[cfg(all(target_env = "msvc", target_arch = "x86_64"))]
 fn assembly(file_vec: &mut Vec<PathBuf>, base_dir: &Path) {
-    let files = glob::glob(&format!("{}/win64/*-x86_64.asm", base_dir.display()))
-        .expect("unable to collect assembly files");
+    let files =
+        glob::glob(&format!("{}/win64/*-x86_64.asm", base_dir.display()))
+            .expect("unable to collect assembly files");
     for file in files {
         file_vec.push(file.unwrap());
     }
@@ -16,8 +17,9 @@ fn assembly(file_vec: &mut Vec<PathBuf>, base_dir: &Path) {
 
 #[cfg(all(target_env = "msvc", target_arch = "aarch64"))]
 fn assembly(file_vec: &mut Vec<PathBuf>, base_dir: &Path) {
-    let files = glob::glob(&format!("{}/win64/*-armv8.asm", base_dir.display()))
-        .expect("unable to collect assembly files");
+    let files =
+        glob::glob(&format!("{}/win64/*-armv8.asm", base_dir.display()))
+            .expect("unable to collect assembly files");
     for file in files {
         file_vec.push(file.unwrap());
     }
@@ -58,7 +60,9 @@ fn main() {
                     .expect("can't access current directory")
                     .parent()
                     .and_then(|dir| dir.parent())
-                    .expect("can't access parent of parent of current directory")
+                    .expect(
+                        "can't access parent of parent of current directory",
+                    )
                     .into()
             }
         }
@@ -69,6 +73,13 @@ fn main() {
 
     file_vec.push(c_src_dir.join("server.c"));
     if cfg!(feature = "ckb-vm") {
+        let target = std::env::var("TARGET").unwrap();
+        assert!(
+            target.starts_with("riscv64"),
+            "Feature ckb-vm is enabled, but {} is not a riscv64 target. Try to build this crate with `cargo build --target=riscv64imac-unknown-none-elf`",
+            target
+        );
+
         let asm_src_dir = c_src_dir.join("asm");
         file_vec.push(asm_src_dir.join("blst_mul_mont_384.riscv.S"));
         file_vec.push(asm_src_dir.join("blst_mul_mont_384x.riscv.S"));
@@ -76,6 +87,27 @@ fn main() {
         let c_deps_dir = blst_base_dir.join("deps");
 
         let mut cc = cc::Build::new();
+
+        // Since ckb-vm feature is enabled, we must use a riscv gcc to compile
+        // the c files. We try to be a smart guy here, i.e. if environment variables
+        // like CC_riscv64imac_unknown_none_elf (the environment variable used by the crate cc
+        // to determine which c compiler to use for that target) is not set,
+        // we try to use compilers like riscv64-unknown-elf-gcc (if it is found).
+        let target_cc_env = format!("CC_{}", target.replace("-", "_"));
+        if std::env::var(&target_cc_env).is_err() {
+            for command in [
+                "riscv64-unknown-elf-gcc",
+                "riscv64-elf-gcc",
+                "riscv64-none-elf-gcc",
+            ] {
+                match std::process::Command::new(command).arg("-v").spawn() {
+                    Ok(_) => {
+                        cc.compiler(command);
+                    }
+                    _ => {}
+                }
+            }
+        }
         // CFLAGS="-DBUILD_FOR_CKB_VM -DUSE_MUL_MONT_384_ASM -DCKB_DECLARATION_ONLY -fno-builtin-printf -fPIC -fvisibility=hidden -fdata-sections -ffunction-sections -O3 -nostdinc -nostdlib -nostartfiles -Wall -Werror -Wno-nonnull -Wno-nonnull-compare -Wno-unused-function -g -Wl,-static -Wl,--gc-sections -I deps/ckb-c-stdlib -I deps/ckb-c-stdlib/libc"
         cc.define("BUILD_FOR_CKB_VM", None)
             .define("USE_MUL_MONT_384_ASM", None)
@@ -123,15 +155,17 @@ fn main() {
                 println!("`force-adx` is ignored for non-x86_64 targets");
             }
         }
-        (false, false) =>
-        {
+        (false, false) => {
             #[cfg(target_arch = "x86_64")]
-            if target_arch.eq("x86_64") && std::is_x86_feature_detected!("adx") {
+            if target_arch.eq("x86_64") && std::is_x86_feature_detected!("adx")
+            {
                 println!("Enabling ADX because it was detected on the host");
                 cc.define("__ADX__", None);
             }
         }
-        (true, true) => panic!("Cannot compile with both `portable` and `force-adx` features"),
+        (true, true) => panic!(
+            "Cannot compile with both `portable` and `force-adx` features"
+        ),
     }
     cc.flag_if_supported("-mno-avx") // avoid costly transitions
         .flag_if_supported("-fno-builtin-memcpy")
@@ -141,3 +175,5 @@ fn main() {
     }
     cc.files(&file_vec).compile("libblst.a");
 }
+
+
