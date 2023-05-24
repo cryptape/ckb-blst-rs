@@ -1,11 +1,14 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
-HERE=`dirname $0`
-cd "${HERE}"
+HERE="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+BLST_DIR="$HERE/blst"
+rm -rf "$BLST_DIR"
+mkdir -p "$BLST_DIR"
 
-rm -rf blst
-git worktree prune
-git worktree add blst
+TOP="$(git rev-parse --show-toplevel)"
+cd "$TOP"
+git ls-files --recurse-submodules | tar c -T- | tar x -C "$BLST_DIR"
 
-# --allow-dirty because the temporary blst symbolic link is not committed
+cd "$HERE"
+# --allow-dirty because files in the temporary blst are not committed
 cargo publish --allow-dirty "$@"
