@@ -5,7 +5,7 @@ authors = ["contrun <uuuuuu@protonmail.com>"]
 edition = "2021"
 license = "Apache-2.0"
 description = "Bindings for blst BLS12-381 library with ckb compatibility"
-repository = "https://github.com/supranational/blst"
+repository = "https://github.com/cryptape/ckb-blst-rs"
 readme = "README.md"
 include = [
     "**/*.rs",
@@ -16,6 +16,7 @@ include = [
     "blst/src/*.h",
     "blst/build/**",
     "blst/src/asm/*.pl",
+    "blst/src/asm/*.S",
     "blst/bindings/blst.h",
     "blst/bindings/blst_aux.h",
 ]
